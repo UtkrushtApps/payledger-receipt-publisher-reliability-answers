@@ -1,0 +1,51 @@
+services:
+  rabbitmq:
+    image: rabbitmq:3.12-management
+    hostname: rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: task_user
+      RABBITMQ_DEFAULT_PASS: task_password
+      RABBITMQ_DEFAULT_VHOST: task_vhost
+    ports:
+      - "127.0.0.1:5672:5672"
+      - "127.0.0.1:15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["node", "src/index.js", "api"]
+    environment:
+      AMQP_URL: amqp://task_user:task_password@rabbitmq:5672/task_vhost
+      SERVICE_ROLE: api
+      PORT: "3000"
+    ports:
+      - "127.0.0.1:3000:3000"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["node", "src/index.js", "worker"]
+    environment:
+      AMQP_URL: amqp://task_user:task_password@rabbitmq:5672/task_vhost
+      SERVICE_ROLE: worker
+      PORT: "3100"
+    ports:
+      - "127.0.0.1:3100:3100"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+volumes:
+  rabbitmq_data:

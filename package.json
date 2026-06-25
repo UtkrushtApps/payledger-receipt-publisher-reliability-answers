@@ -1,0 +1,21 @@
+{
+  "name": "payledger-receipt-publisher-reliability",
+  "version": "1.0.0",
+  "description": "PayLedger payment webhook receipt-job publisher and worker over RabbitMQ",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "start:api": "node src/index.js api",
+    "start:worker": "node src/index.js worker",
+    "readiness": "node scripts/readiness-check.js",
+    "test": "node --test test/"
+  },
+  "dependencies": {
+    "amqplib": "0.10.4",
+    "express": "4.19.2",
+    "pino": "9.3.2"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
